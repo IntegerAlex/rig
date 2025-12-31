@@ -23,6 +23,7 @@ from .zsh import ZshInstaller
 from .git import GitInstaller
 from .rkhunter import RkhunterInstaller
 from .chkrootkit import ChkrootkitInstaller
+from .vrms import VRMSInstaller
 
 __all__ = [
     "BootstrapInstaller",
@@ -46,5 +47,6 @@ __all__ = [
     "GitInstaller",
     "RkhunterInstaller",
     "ChkrootkitInstaller",
+    "VRMSInstaller",
 ]
 

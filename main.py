@@ -39,6 +39,7 @@ from installers import (
     GitInstaller,
     RkhunterInstaller,
     ChkrootkitInstaller,
+    VRMSInstaller,
 )
 
 # Install rich traceback for better error display
@@ -166,6 +167,11 @@ class SetupManager:
                 ChkrootkitInstaller(self.runner, self.logger),
                 "Install chkrootkit security scanner"
             ),
+            InstallOption(
+                "vrms",
+                VRMSInstaller(self.runner, self.logger),
+                "Install vrms (Virtual Richard M. Stallman - lists non-free packages)"
+            ),
         ]
     
     def show_welcome(self):
@@ -173,7 +179,7 @@ class SetupManager:
         welcome_text = Text()
         # welcome_text.append("🚀 ", style="bold blue")
         welcome_text.append("rig - Opinionated system setup tool", style="bold white")
-        welcome_text.append(" v0.1.0", style="dim white")
+        welcome_text.append(" v0.1.1", style="dim white")
         welcome_text.append("\n\n", style="white")
         welcome_text.append(
             "Opinionated system setup tool with basic tools to get started with in any Linux distribution.\n",
