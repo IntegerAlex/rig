@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: Copyright (C) 2025 Akshat Kotpalliwar (alias IntegerAlex) <inquiry.akshatkotpalliwar@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+[project]
+name = "rig"
+version = "0.1.0"
+description = "Opinionated system setup tool with basic tools to get started with in any Linux distribution. No custom configurations, just the essential tools needed to be installed."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "rich>=13.7.0",
+]
+
+[project.scripts]
+rig = "main:main"
