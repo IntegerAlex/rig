@@ -118,26 +118,20 @@ fi
 echo ""
 echo "🎉 Installation complete!"
 echo ""
-echo "🚀 Running rig to show available tools..."
-echo ""
 
-# Run rig, but don't fail the installation if it fails
-if "$INSTALL_PATH"; then
+# Check if we can access the terminal (even when stdin is piped)
+if [ -t 1 ] && [ -c /dev/tty ] 2>/dev/null; then
+    echo "🚀 Running rig..."
     echo ""
-    echo "✅ rig completed successfully!"
+    # Execute rig automatically - redirect stdin from /dev/tty to allow interactive prompts
+    "$INSTALL_PATH" < /dev/tty
 else
-    exit_code=$?
+    echo "📖 To run rig, execute:"
+    echo "   rig"
     echo ""
-    echo "⚠️  rig exited with code $exit_code"
-    echo "   This is normal if bootstrap failed (requires sudo) or you chose to exit."
-    echo ""
-    echo "📖 To run rig again:"
-    echo "   rig              # Run rig (requires sudo for system tools)"
+    echo "📚 rig is an opinionated system setup tool for Linux"
+    echo "   It helps you install essential development tools with a beautiful UI"
 fi
-
-echo ""
-echo "📚 rig is an opinionated system setup tool for Linux"
-echo "   It helps you install essential development tools with a beautiful UI"
 `;
 
 export default {

@@ -21,11 +21,13 @@ This will:
 - Add it to PATH for the current session
 - Provide usage instructions
 
-**Note:** rig requires sudo access for installing system packages, so run it in an interactive terminal:
+**Usage:**
 
 ```bash
-rig  # Run in interactive terminal (will prompt for sudo password)
+rig  # Run rig (requires sudo for system tools)
 ```
+
+**Note:** rig requires sudo access for installing system packages, so run it in an interactive terminal where it can prompt for your password.
 
 ### From Source (Development)
 
