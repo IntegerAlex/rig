@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.3] - 2025-01-02
+
+### Added
+
+- Automatic shell configuration: Detects bash/zsh and auto-updates .bashrc/.zshrc with PATH
+- Enhanced error handling: Custom exception classes with actionable recovery suggestions
+- Retry logic: Network operations retry 3 times with exponential backoff
+- CLI beautification: Progress bars and spinners for better visual feedback
+- Enhanced summary display: Statistics panel with success rates, timing, and better formatting
+- Improved welcome screen: Better formatting, emojis, and visual enhancements
+
+### Changed
+
+- Suppressed non-critical log warnings for cleaner output
+- Better error messages: Specific, actionable suggestions instead of generic errors
+- Enhanced installation summary: Better table formatting with icons and color coding
+- Improved installer: Automatic shell config update eliminates manual PATH setup
+
+### Fixed
+
+- Fixed shell configuration error (duplicate import issue)
+- Better handling of network failures with retry logic
+- Improved error categorization and recovery suggestions
+
 ## [0.1.2] - 2025-01-02
 
 ### Added

@@ -198,7 +198,7 @@ class SetupManager:
         welcome_text.append("🚀 ", style="bold blue")
         welcome_text.append("rig", style="bold bright_white")
         welcome_text.append(" - Opinionated system setup tool", style="bold white")
-        welcome_text.append(" v0.1.2", style="dim cyan")
+        welcome_text.append(" v0.1.3", style="dim cyan")
         
         welcome_text.append("\n\n", style="white")
         
