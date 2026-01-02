@@ -44,6 +44,7 @@ uv run main.py
 
 ## tools
 
+- bootstrap - initialize system with essential packages [curl , wget , gnupg , lsb-release , lsof]
 - GitHub CLI (gh)
 - uv - Python manager (pip alternative but better)
 - Node.js - JavaScript runtime (nobody uses bun or deno)

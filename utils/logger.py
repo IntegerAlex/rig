@@ -37,7 +37,8 @@ class SetupLogger:
                     # Fallback to user's home directory
                     self.log_file = Path.home() / ".setup.log"
                     self.log_file.touch()
-                    console.print(f"[yellow]⚠[/yellow] Using fallback log: {self.log_file}")
+                    # Suppress the warning - it's not critical
+                    pass
         except Exception as e:
             console.print(f"[red]✖[/red] Failed to setup log file: {e}")
             self.log_file = Path.home() / ".setup.log"
@@ -56,13 +57,15 @@ class SetupLogger:
             try:
                 fallback_log.touch()
                 self.log_file = fallback_log
-                console.print(f"[yellow]⚠[/yellow] Cannot write to {LOG_FILE}, using fallback: {self.log_file}")
+                # Suppress warning - fallback is working fine
+                pass
             except Exception as e:
                 console.print(f"[red]✖[/red] Failed to create fallback log file: {e}")
                 # Last resort: use a temp file
                 self.log_file = Path(tempfile.gettempdir()) / "setup.log"
                 self.log_file.touch()
-                console.print(f"[yellow]⚠[/yellow] Using temporary log: {self.log_file}")
+                # Suppress warning - temporary log is working fine
+                pass
     
     def _setup_logger(self) -> logging.Logger:
         """Configure logger with rich handler."""

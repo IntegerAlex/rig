@@ -103,16 +103,71 @@ mv "$TEMP_FILE" "$INSTALL_PATH"
 
 echo "✅ Installed to: $INSTALL_PATH"
 
-# Add to PATH for current session and run rig
-if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
-    echo ""
-    echo "⚠️  Adding $INSTALL_DIR to PATH for this session..."
-    export PATH="$INSTALL_DIR:$PATH"
+# Configure shell for permanent PATH setup
+echo ""
+echo "🔧 Configuring shell..."
 
-    echo ""
-    echo "💡 For permanent PATH setup, add this to your ~/.bashrc or ~/.zshrc:"
-    echo "   export PATH=\\$HOME/.local/bin:\\$PATH"
-    echo "   Then run: source ~/.bashrc  (or source ~/.zshrc)"
+# Detect shell
+SHELL_TYPE=""
+if [[ "$SHELL" == *"zsh"* ]]; then
+    SHELL_TYPE="zsh"
+elif [[ "$SHELL" == *"bash"* ]]; then
+    SHELL_TYPE="bash"
+else
+    # Fallback: check current shell process
+    if ps -p $$ -o cmd= | grep -q zsh; then
+        SHELL_TYPE="zsh"
+    else
+        SHELL_TYPE="bash"
+    fi
+fi
+
+echo "→ Detected shell: $SHELL_TYPE"
+
+# Determine config file
+CONFIG_FILE=""
+if [[ "$SHELL_TYPE" == "zsh" ]]; then
+    # Check for existing zsh config files in order of preference
+    if [[ -f "$HOME/.zshrc" ]]; then
+        CONFIG_FILE="$HOME/.zshrc"
+    elif [[ -f "$HOME/.zprofile" ]]; then
+        CONFIG_FILE="$HOME/.zprofile"
+    elif [[ -f "$HOME/.zshenv" ]]; then
+        CONFIG_FILE="$HOME/.zshenv"
+    else
+        CONFIG_FILE="$HOME/.zshrc"
+    fi
+else
+    # Check for existing bash config files in order of preference
+    if [[ -f "$HOME/.bashrc" ]]; then
+        CONFIG_FILE="$HOME/.bashrc"
+    elif [[ -f "$HOME/.bash_profile" ]]; then
+        CONFIG_FILE="$HOME/.bash_profile"
+    elif [[ -f "$HOME/.profile" ]]; then
+        CONFIG_FILE="$HOME/.profile"
+    else
+        CONFIG_FILE="$HOME/.bashrc"
+    fi
+fi
+
+echo "→ Config file: $(basename "$CONFIG_FILE")"
+
+# Check if PATH entry already exists
+PATH_ENTRY="export PATH=\"\$HOME/.local/bin:\$PATH\""
+if grep -q "$PATH_ENTRY" "$CONFIG_FILE" 2>/dev/null; then
+    echo "→ PATH entry already exists in $(basename "$CONFIG_FILE")"
+else
+    # Add PATH entry to config file
+    echo "" >> "$CONFIG_FILE"
+    echo "# Added by rig installer" >> "$CONFIG_FILE"
+    echo "$PATH_ENTRY" >> "$CONFIG_FILE"
+    echo "✅ Added PATH entry to $(basename "$CONFIG_FILE")"
+fi
+
+# Add to current session PATH if not already there
+if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
+    export PATH="$INSTALL_DIR:$PATH"
+    echo "→ Added to current session PATH"
 fi
 
 echo ""

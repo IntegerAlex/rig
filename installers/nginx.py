@@ -6,6 +6,7 @@ import shutil
 
 from utils.base import BaseInstaller
 from utils.types import InstallerResult
+from utils.errors import PackageManagerError, InstallationError
 
 
 class NginxInstaller(BaseInstaller):
@@ -39,6 +40,18 @@ class NginxInstaller(BaseInstaller):
             )
             
             return InstallerResult(True, "nginx installed successfully")
+        except (PackageManagerError, InstallationError):
+            # Re-raise custom errors as-is
+            raise
         except Exception as e:
-            return InstallerResult(False, "Failed to install nginx", str(e))
+            # Convert other exceptions to installation errors with helpful suggestions
+            raise InstallationError(
+                "Failed to install nginx web server",
+                "nginx",
+                [
+                    "Check your internet connection",
+                    "Ensure you have sudo privileges",
+                    "Try: sudo apt update && sudo apt install nginx"
+                ]
+            ) from e
 

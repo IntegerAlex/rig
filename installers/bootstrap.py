@@ -4,6 +4,7 @@
 
 from utils.base import BaseInstaller
 from utils.types import InstallerResult
+from utils.errors import PackageManagerError
 
 
 class BootstrapInstaller(BaseInstaller):
@@ -15,13 +16,19 @@ class BootstrapInstaller(BaseInstaller):
 
             self.runner.run(["apt", "update"], sudo=True, description="Updating package lists")
             self.runner.run(
-                ["apt", "install", "-y", "ca-certificates", "curl", "wget", "gnupg", "lsb-release"],
+                ["apt", "install", "-y", "ca-certificates", "curl", "wget", "gnupg", "lsb-release", "lsof"],
                 sudo=True,
                 description="Installing essential packages"
             )
 
             return InstallerResult(True, "System initialized successfully")
+        except PackageManagerError:
+            # Re-raise package manager errors as-is
+            raise
         except Exception as e:
-            print(f"DEBUG: Bootstrap exception: {e}")
-            return InstallerResult(False, "Failed to initialize system", str(e))
+            # Convert other exceptions to package manager errors with helpful suggestions
+            raise PackageManagerError(
+                "Failed to initialize system with essential packages",
+                None
+            ) from e
 

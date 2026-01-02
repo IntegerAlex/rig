@@ -7,6 +7,7 @@ Migrated from new1.sh with enhanced features.
 """
 
 import sys
+import time
 from typing import List
 
 from rich.console import Console
@@ -15,8 +16,12 @@ from rich.prompt import Confirm
 from rich.table import Table
 from rich.text import Text
 from rich.traceback import install as install_rich_traceback
+from rich.spinner import Spinner
+from contextlib import contextmanager
 
 from utils import SetupLogger, CommandRunner, InstallerResult, InstallOption, BaseInstaller
+from utils.shell_config import update_shell_config
+from utils.errors import RigError
 from installers import (
     BootstrapInstaller,
     GitHubCLIInstaller,
@@ -47,6 +52,17 @@ install_rich_traceback(show_locals=True)
 
 # Initialize console
 console = Console()
+
+
+@contextmanager
+def spinner_context(message: str):
+    """Context manager for showing a spinner during operations."""
+    spinner = Spinner("dots", text=message)
+    with console.status(spinner) as status:
+        try:
+            yield
+        finally:
+            status.stop()
 
 
 class SetupManager:
@@ -177,74 +193,131 @@ class SetupManager:
     def show_welcome(self):
         """Display welcome message."""
         welcome_text = Text()
-        # welcome_text.append("🚀 ", style="bold blue")
-        welcome_text.append("rig - Opinionated system setup tool", style="bold white")
-        welcome_text.append(" v0.1.2", style="dim white")
+        
+        # Title with emoji
+        welcome_text.append("🚀 ", style="bold blue")
+        welcome_text.append("rig", style="bold bright_white")
+        welcome_text.append(" - Opinionated system setup tool", style="bold white")
+        welcome_text.append(" v0.1.2", style="dim cyan")
+        
         welcome_text.append("\n\n", style="white")
+        
+        # Description with better formatting
+        welcome_text.append("✨ ", style="yellow")
         welcome_text.append(
             "Opinionated system setup tool with basic tools to get started with in any Linux distribution.\n",
-            style="dim"
+            style="white"
         )
-        welcome_text.append("No custom configurations, just the essential tools needed to be installed.", style="dim")
+        welcome_text.append("📦 ", style="cyan")
+        welcome_text.append("No custom configurations, just the essential tools needed to be installed.", style="white")
+        
         welcome_text.append("\n\n", style="white")
+        
+        # Separator line
+        welcome_text.append("─" * 50, style="dim")
+        welcome_text.append("\n\n", style="white")
+        
+        # Copyright and license with better styling
+        welcome_text.append("© ", style="dim")
         welcome_text.append("Copyright (C) 2025 ", style="dim")
-        welcome_text.append("Akshat Kotpalliwar (alias IntegerAlex)", style="bold dim")
+        welcome_text.append("Akshat Kotpalliwar", style="bold dim cyan")
+        welcome_text.append(" (alias ", style="dim")
+        welcome_text.append("IntegerAlex", style="bold dim")
+        welcome_text.append(")", style="dim")
         welcome_text.append("\n", style="white")
+        welcome_text.append("📜 ", style="dim")
         welcome_text.append("License: ", style="dim")
-        welcome_text.append("GPL-3.0-only", style="bold dim")
+        welcome_text.append("GPL-3.0-only", style="bold dim green")
         
         panel = Panel(
             welcome_text,
-            border_style="blue",
-            padding=(1, 2),
-            title="Welcome",
-            title_align="left"
+            border_style="bright_blue",
+            padding=(1, 3),
+            title="[bold bright_blue]✨ Welcome to rig ✨[/bold bright_blue]",
+            title_align="center",
+            expand=False
         )
         self.console.print(panel)
         self.console.print()
     
     def show_summary(self):
-        """Show installation summary."""
-        table = Table(title="Installation Summary", show_header=True, header_style="bold blue")
-        table.add_column("Tool", style="cyan", no_wrap=True)
-        table.add_column("Status", style="magenta")
-        table.add_column("Message", style="white")
-        
+        """Show installation summary with enhanced formatting and statistics."""
+        # Create enhanced table with better styling
+        table = Table(
+            title="📊 Installation Summary",
+            show_header=True,
+            header_style="bold blue",
+            border_style="blue",
+            show_lines=True,
+            box=None,
+            padding=(0, 1)
+        )
+        table.add_column("🛠️ Tool", style="cyan bold", no_wrap=True, min_width=15)
+        table.add_column("📈 Status", style="magenta", no_wrap=True, min_width=12)
+        table.add_column("💬 Details", style="white", min_width=30)
+
         success_count = 0
         fail_count = 0
-        
+        skipped_count = 0
+
         for name, result in self.results:
             if result.success:
-                status = "[green]✓ Success[/green]"
-                success_count += 1
+                if "already installed" in result.message.lower():
+                    status = "[dim]⏭️ Skipped[/dim]"
+                    skipped_count += 1
+                else:
+                    status = "[green]✅ Success[/green]"
+                    success_count += 1
             else:
-                status = "[red]✗ Failed[/red]"
+                status = "[red]❌ Failed[/red]"
                 fail_count += 1
-            
+
             message = result.message
             if result.error:
-                message += f" ({result.error[:50]}...)" if len(result.error) > 50 else f" ({result.error})"
-            
+                # Truncate long error messages and add ellipsis
+                if len(result.error) > 60:
+                    message += f" ([red]{result.error[:57]}...[/red])"
+                else:
+                    message += f" ([red]{result.error}[/red])"
+
             table.add_row(name, status, message)
-        
+
         self.console.print()
         self.console.print(table)
         self.console.print()
-        
-        # Summary stats
-        summary_text = Text()
-        summary_text.append(f"✓ Successful: ", style="green")
-        summary_text.append(f"{success_count}", style="bold green")
-        summary_text.append(f"  ✗ Failed: ", style="red")
-        summary_text.append(f"{fail_count}", style="bold red")
-        summary_text.append(f"  Total: ", style="white")
-        summary_text.append(f"{len(self.results)}", style="bold white")
-        
-        self.console.print(Panel(summary_text, border_style="blue", padding=(1, 2)))
+
+        # Enhanced summary statistics with icons and better formatting
+        success_rate = (success_count / len(self.results) * 100) if self.results else 0
+
+        summary_table = Table(show_header=False, box=None, padding=(0, 2))
+        summary_table.add_column("Metric", style="white", no_wrap=True)
+        summary_table.add_column("Value", style="bold cyan", justify="right")
+
+        summary_table.add_row("✅ Successful", f"{success_count}")
+        summary_table.add_row("❌ Failed", f"{fail_count}")
+        summary_table.add_row("⏭️ Skipped", f"{skipped_count}")
+        summary_table.add_row("📊 Total", f"{len(self.results)}")
+        summary_table.add_row("🎯 Success Rate", f"{success_rate:.1f}%")
+
+        # Calculate total execution time if available
+        if hasattr(self, '_start_time'):
+            end_time = time.time()
+            duration = end_time - self._start_time
+            summary_table.add_row("⏱️ Total Time", f"{duration:.1f}s")
+
+        summary_panel = Panel(
+            summary_table,
+            title="📈 Statistics",
+            border_style="green",
+            padding=(1, 2)
+        )
+
+        self.console.print(summary_panel)
         self.console.print()
     
     def run(self):
         """Run the setup process."""
+        self._start_time = time.time()
         self.show_welcome()
         
         # Bootstrap is always run first
@@ -269,9 +342,12 @@ class SetupManager:
         selected_options = []
         for option in self.install_options[1:]:  # Skip bootstrap
             # Check if already installed
-            if hasattr(option.installer, 'is_installed') and option.installer.is_installed():
-                self.console.print(f"[dim]→ {option.name} is already installed, skipping[/dim]")
-                continue
+            if hasattr(option.installer, 'is_installed'):
+                with spinner_context(f"Checking {option.name}..."):
+                    is_installed = option.installer.is_installed()
+                if is_installed:
+                    self.console.print(f"[dim]→ {option.name} is already installed, skipping[/dim]")
+                    continue
 
             if Confirm.ask(f"[cyan]👉[/cyan] Install {option.name}?", default=False):
                 selected_options.append(option)
@@ -303,6 +379,14 @@ class SetupManager:
             except KeyboardInterrupt:
                 self.console.print("\n[yellow]⚠[/yellow] Installation interrupted by user")
                 break
+            except RigError as e:
+                # Handle custom rig errors with suggestions
+                error_result = InstallerResult(False, str(e), str(e))
+                self.results.append((option.name, error_result))
+                self.console.print(f"[red]✖[/red] {e.message}")
+                if e.suggestion:
+                    self.console.print(f"[cyan]💡[/cyan] {e.suggestion}")
+                self.logger.log("error", f"Error installing {option.name}: {e}")
             except Exception as e:
                 error_result = InstallerResult(False, f"Unexpected error: {str(e)}", str(e))
                 self.results.append((option.name, error_result))
@@ -311,12 +395,15 @@ class SetupManager:
         
         # Show summary
         self.show_summary()
-        
+
+        # Update shell configuration
+        self.console.print()
+        update_shell_config(".local/bin")
+
         # Final messages
         self.console.print()
         self.console.print(f"[green]✓[/green] Setup completed successfully 🎉")
         self.console.print(f"[dim]📄 Log file: {self.logger.log_file}[/dim]")
-        self.console.print(f"[dim]🔁 Restart shell: source ~/.bashrc (or ~/.zshrc)[/dim]")
 
 
 def main():
