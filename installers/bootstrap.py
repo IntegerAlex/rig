@@ -11,16 +11,17 @@ class BootstrapInstaller(BaseInstaller):
     
     def install(self) -> InstallerResult:
         try:
-            self.console.print("[blue]ℹ[/blue] Initializing system")
-            
+            print("ℹ Initializing system")
+
             self.runner.run(["apt", "update"], sudo=True, description="Updating package lists")
             self.runner.run(
                 ["apt", "install", "-y", "ca-certificates", "curl", "wget", "gnupg", "lsb-release"],
                 sudo=True,
                 description="Installing essential packages"
             )
-            
+
             return InstallerResult(True, "System initialized successfully")
         except Exception as e:
+            print(f"DEBUG: Bootstrap exception: {e}")
             return InstallerResult(False, "Failed to initialize system", str(e))
 

@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2] - 2025-01-02
+
+### Added
+
+- Cloudflare Worker installer at `https://rig-installer.inquiry-akshatkotpalliwar.workers.dev`
+- Automatic rig execution after installation
+- Improved bootstrap failure handling - shows available tools even without sudo
+- Graceful error messages when sudo access is not available
+
+### Changed
+
+- Enhanced installer to run rig automatically after installation
+- Better user experience when bootstrap fails due to sudo requirements
+- Improved error handling and user guidance
+
 ## [0.1.1] - 2025-12-31
 
 ### Added

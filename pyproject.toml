@@ -3,7 +3,7 @@
 
 [project]
 name = "rig"
-version = "0.1.1"
+version = "0.1.2"
 description = "Opinionated system setup tool with basic tools to get started with in any Linux distribution. No custom configurations, just the essential tools needed to be installed."
 readme = "README.md"
 requires-python = ">=3.12"

@@ -5,13 +5,37 @@ No custom configurations, just the essential tools needed to be installed.
 
 ## Installation
 
+### Quick Install (Recommended)
+
+For Debian-based Linux distributions (Ubuntu, Debian, etc.):
+
+```bash
+curl https://rig-installer.gossorg.in | bash
+```
+
+This will:
+
+- Download the latest binary release
+- Install it to `~/.local/bin/rig`
+- Make it executable
+- Add it to PATH for the current session
+- Provide usage instructions
+
+**Note:** rig requires sudo access for installing system packages, so run it in an interactive terminal:
+
+```bash
+rig  # Run in interactive terminal (will prompt for sudo password)
+```
+
+### From Source (Development)
+
 ```bash
 git clone https://github.com/integeralex/rig.git
 cd rig
-uv sync 
-python3 main.py 
+uv sync
+python3 main.py
 
-or 
+# or
 
 uv run main.py
 ```

@@ -179,7 +179,7 @@ class SetupManager:
         welcome_text = Text()
         # welcome_text.append("🚀 ", style="bold blue")
         welcome_text.append("rig - Opinionated system setup tool", style="bold white")
-        welcome_text.append(" v0.1.1", style="dim white")
+        welcome_text.append(" v0.1.2", style="dim white")
         welcome_text.append("\n\n", style="white")
         welcome_text.append(
             "Opinionated system setup tool with basic tools to get started with in any Linux distribution.\n",
@@ -253,15 +253,18 @@ class SetupManager:
         # Don't use spinner for bootstrap as it may need sudo password input
         result = bootstrap.installer.install()
         self.results.append((bootstrap.name, result))
-        
+
         if not result.success:
-            self.console.print(f"[red]✖[/red] Bootstrap failed: {result.message}")
-            if result.error:
-                self.console.print(f"[dim]{result.error}[/dim]")
+            print("✖ Bootstrap failed:", result.message)
+            print()
+            print("⚠️  rig requires sudo access for system package installation.")
+            print("💡 To use rig, run it in an interactive terminal: rig")
+            print()
+            print("Available tools include: GitHub CLI, uv, Node.js, Neovim, nginx, and more!")
             return
-        
-        self.console.print(f"[green]✓[/green] Bootstrap completed\n")
-        
+        else:
+            self.console.print(f"[green]✓[/green] Bootstrap completed\n")
+
         # Ask for each option
         selected_options = []
         for option in self.install_options[1:]:  # Skip bootstrap
@@ -269,7 +272,7 @@ class SetupManager:
             if hasattr(option.installer, 'is_installed') and option.installer.is_installed():
                 self.console.print(f"[dim]→ {option.name} is already installed, skipping[/dim]")
                 continue
-            
+
             if Confirm.ask(f"[cyan]👉[/cyan] Install {option.name}?", default=False):
                 selected_options.append(option)
         
@@ -322,11 +325,12 @@ def main():
         manager = SetupManager()
         manager.run()
     except KeyboardInterrupt:
-        console.print("\n[yellow]⚠[/yellow] Setup interrupted by user")
+        print("\n⚠ Setup interrupted by user")
         sys.exit(1)
     except Exception as e:
-        console.print(f"[red]✖[/red] Fatal error: {e}")
-        console.print_exception()
+        print(f"✖ Fatal error: {e}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
 
 

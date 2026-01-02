@@ -1,0 +1,21 @@
+# SPDX-FileCopyrightText: Copyright (C) 2025 Akshat Kotpalliwar (alias IntegerAlex) <inquiry.akshatkotpalliwar@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+name = "rig-installer"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[build]
+command = "echo 'No build step required'"
+
+# Cloudflare Pages configuration
+# pages_build_output_dir = "dist"
+
+# Environment variables (if needed)
+# [vars]
+# REPO = "IntegerAlex/rig"
+
+# Routes (if deploying to a custom domain)
+# routes = [
+#   { pattern = "rig-installer.gossorg.in", zone_name = "gossorg.in" }
+# ]
