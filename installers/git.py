@@ -2,37 +2,16 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Git installer."""
 
-import shutil
-
-from utils.base import BaseInstaller
-from utils.types import InstallerResult
+from .apt_package import AptPackageInstaller
 
 
-class GitInstaller(BaseInstaller):
+class GitInstaller(AptPackageInstaller):
     """Install git version control system."""
-    
-    def is_installed(self) -> bool:
-        # Check if command exists first to avoid error logs
-        if not shutil.which("git"):
-            return False
-        
-        try:
-            result = self.runner.run(["git", "--version"], check=False, capture_output=True)
-            return result.returncode == 0
-        except Exception:
-            return False
-    
-    def install(self) -> InstallerResult:
-        try:
-            self.console.print("[blue]ℹ[/blue] Installing git")
-            
-            self.runner.run(
-                ["apt", "install", "-y", "git"],
-                sudo=True,
-                description="Installing git"
-            )
-            
-            return InstallerResult(True, "git installed successfully")
-        except Exception as e:
-            return InstallerResult(False, "Failed to install git", str(e))
 
+    def __init__(self, runner, logger):
+        super().__init__(
+            runner,
+            logger,
+            package_name="git",
+            success_message="git installed successfully",
+        )

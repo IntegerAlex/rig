@@ -2,37 +2,17 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Chkrootkit installer."""
 
-import shutil
-
-from utils.base import BaseInstaller
-from utils.types import InstallerResult
+from .apt_package import AptPackageInstaller
 
 
-class ChkrootkitInstaller(BaseInstaller):
+class ChkrootkitInstaller(AptPackageInstaller):
     """Install chkrootkit."""
-    
-    def is_installed(self) -> bool:
-        # Check if command exists first to avoid error logs
-        if not shutil.which("chkrootkit"):
-            return False
-        
-        try:
-            result = self.runner.run(["chkrootkit", "-V"], check=False, capture_output=True)
-            return result.returncode == 0
-        except Exception:
-            return False
-    
-    def install(self) -> InstallerResult:
-        try:
-            self.console.print("[blue]ℹ[/blue] Installing chkrootkit")
-            
-            self.runner.run(
-                ["apt", "install", "-y", "chkrootkit"],
-                sudo=True,
-                description="Installing chkrootkit"
-            )
-            
-            return InstallerResult(True, "chkrootkit installed successfully")
-        except Exception as e:
-            return InstallerResult(False, "Failed to install chkrootkit", str(e))
 
+    def __init__(self, runner, logger):
+        super().__init__(
+            runner,
+            logger,
+            package_name="chkrootkit",
+            version_args=["-V"],
+            success_message="chkrootkit installed successfully",
+        )

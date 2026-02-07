@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Installers for various tools and packages."""
 
+from .apt_package import AptPackageInstaller
 from .bootstrap import BootstrapInstaller
 from .github_cli import GitHubCLIInstaller
 from .uv import UVInstaller
@@ -26,6 +27,7 @@ from .chkrootkit import ChkrootkitInstaller
 from .vrms import VRMSInstaller
 
 __all__ = [
+    "AptPackageInstaller",
     "BootstrapInstaller",
     "GitHubCLIInstaller",
     "UVInstaller",

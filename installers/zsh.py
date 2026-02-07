@@ -3,70 +3,60 @@
 """Zsh installer."""
 
 import subprocess
-from pathlib import Path
 
-from utils.base import BaseInstaller
 from utils.types import InstallerResult
 
+from .apt_package import AptPackageInstaller
 
-class ZshInstaller(BaseInstaller):
+
+class ZshInstaller(AptPackageInstaller):
     """Install zsh and set it as default shell."""
-    
+
+    def __init__(self, runner, logger):
+        super().__init__(
+            runner,
+            logger,
+            package_name="zsh",
+            success_message="zsh installed and set as default shell",
+        )
+
     def is_installed(self) -> bool:
-        try:
-            result = self.runner.run(["zsh", "--version"], check=False, capture_output=True)
-            if result.returncode != 0:
-                return False
-            
-            # Check if zsh is already the default shell
-            try:
-                current_shell = Path("/etc/passwd").read_text()
-                # Get current user's shell
-                import os
-                username = os.getenv("USER") or os.getenv("USERNAME")
-                if username:
-                    for line in current_shell.split('\n'):
-                        if line.startswith(f"{username}:"):
-                            shell = line.split(':')[-1]
-                            return shell.endswith('/zsh')
-            except:
-                pass
-            
-            return True
-        except:
+        if not super().is_installed():
             return False
-    
-    def install(self) -> InstallerResult:
+        # Check if zsh is already the default shell
         try:
-            self.console.print("[blue]ℹ[/blue] Installing zsh")
-            
-            # Install zsh
-            self.runner.run(
-                ["apt", "install", "-y", "zsh"],
-                sudo=True,
-                description="Installing zsh"
-            )
-            
-            # Find zsh path
+            from pathlib import Path
+            import os
+            current_passwd = Path("/etc/passwd").read_text()
+            username = os.getenv("USER") or os.getenv("USERNAME")
+            if username:
+                for line in current_passwd.split("\n"):
+                    if line.startswith(f"{username}:"):
+                        shell = line.split(":")[-1]
+                        return shell.rstrip().endswith("/zsh")
+        except Exception:
+            pass
+        return True
+
+    def install(self) -> InstallerResult:
+        result = super().install()
+        if not result.success:
+            return result
+        try:
+            self.console.print("[blue]ℹ[/blue] Setting zsh as default shell")
             try:
                 zsh_path = subprocess.check_output(["which", "zsh"], text=True).strip()
-            except:
+            except Exception:
                 zsh_path = "/usr/bin/zsh"
-            
-            # Set zsh as default shell (chsh doesn't need sudo for current user)
-            self.console.print("[blue]ℹ[/blue] Setting zsh as default shell")
             self.runner.run(
                 ["chsh", "-s", zsh_path],
                 sudo=False,
-                description="Setting zsh as default shell"
+                description="Setting zsh as default shell",
             )
-            
             self.console.print(
                 "[yellow]⚠[/yellow] Default shell changed to zsh. "
                 "The change will take effect after you log out and log back in."
             )
-            
-            return InstallerResult(True, "zsh installed and set as default shell")
         except Exception as e:
-            return InstallerResult(False, "Failed to install zsh", str(e))
-
+            return InstallerResult(False, "zsh installed but failed to set as default shell", str(e))
+        return InstallerResult(True, "zsh installed and set as default shell")

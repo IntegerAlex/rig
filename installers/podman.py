@@ -2,31 +2,16 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Podman installer."""
 
-from utils.base import BaseInstaller
-from utils.types import InstallerResult
+from .apt_package import AptPackageInstaller
 
 
-class PodmanInstaller(BaseInstaller):
+class PodmanInstaller(AptPackageInstaller):
     """Install podman."""
-    
-    def is_installed(self) -> bool:
-        try:
-            result = self.runner.run(["podman", "--version"], check=False, capture_output=True)
-            return result.returncode == 0
-        except:
-            return False
-    
-    def install(self) -> InstallerResult:
-        try:
-            self.console.print("[blue]ℹ[/blue] Installing podman")
-            
-            self.runner.run(
-                ["apt", "install", "-y", "podman"],
-                sudo=True,
-                description="Installing podman"
-            )
-            
-            return InstallerResult(True, "podman installed successfully")
-        except Exception as e:
-            return InstallerResult(False, "Failed to install podman", str(e))
 
+    def __init__(self, runner, logger):
+        super().__init__(
+            runner,
+            logger,
+            package_name="podman",
+            success_message="podman installed successfully",
+        )
