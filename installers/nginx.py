@@ -63,9 +63,17 @@ class NginxInstaller(BaseInstaller):
         except Exception:
             return False
     
-    def _write_site_config(self, filename: str, content: str) -> None:
-        """Write a config file to sites-available using a temp file and sudo cp."""
+    def _write_site_config(self, filename: str, content: str) -> bool:
+        """Write a config file to sites-available only if it does not exist. Returns True if written, False if skipped."""
         path = os.path.join(self.SITES_AVAILABLE, filename)
+        result = self.runner.run(
+            ["test", "-f", path],
+            sudo=True,
+            check=False,
+            capture_output=True,
+        )
+        if result.returncode == 0:
+            return False
         with tempfile.NamedTemporaryFile(mode="w", suffix=".conf", delete=False) as f:
             try:
                 f.write(content)
@@ -77,6 +85,7 @@ class NginxInstaller(BaseInstaller):
                 )
             finally:
                 os.unlink(f.name)
+        return True
     
     def install(self) -> InstallerResult:
         try:
@@ -95,9 +104,10 @@ class NginxInstaller(BaseInstaller):
             )
             
             self.console.print("[blue]ℹ[/blue] Adding basic webserver and reverse-proxy configs")
-            self._write_site_config(self.RIG_WEBSERVER, NGINX_WEBSERVER_CONF)
-            self._write_site_config(self.RIG_REVERSE_PROXY, NGINX_REVERSE_PROXY_CONF)
-            
+            wrote_webserver = self._write_site_config(self.RIG_WEBSERVER, NGINX_WEBSERVER_CONF)
+            wrote_reverse_proxy = self._write_site_config(self.RIG_REVERSE_PROXY, NGINX_REVERSE_PROXY_CONF)
+            if not wrote_webserver and not wrote_reverse_proxy:
+                self.console.print("[dim]Configs already present, skipping.[/dim]")
             self.console.print(
                 "[dim]Configs: /etc/nginx/sites-available/rig-webserver, "
                 "rig-reverse-proxy (enable and reload nginx to use)[/dim]"
