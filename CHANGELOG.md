@@ -2,7 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.3] - 2025-01-02
+## [0.1.4](https://github.com/IntegerAlex/rig/releases/tag/v0.1.4) - 2025-02-07
+
+## Added
+
+- AptPackageInstaller base class for single-package apt installs (package_name, check_command, version_args)
+- Nginx basic webserver and reverse-proxy configs (rig-webserver, rig-reverse-proxy in sites-available)
+
+### Changed
+
+- Migrated btop, git, fail2ban, fastfetch, rkhunter, chkrootkit, vrms, podman, zsh to AptPackageInstaller
+- pnpm: use nvm install/use Node 24 then corepack enable (corepack requires Node 24+)
+- Linux Mint support: installer checks for apt or apt-get; README and messages mention Linux Mint
+- Installer script: Debian-based detection accepts apt or apt-get; mentions Ubuntu/Debian/Linux Mint
+
+### Fixed
+
+- Progress/loaders: capture output when showing progress and disable progress UI for sudo to avoid broken bars
+- Indeterminate progress: spinner-only display (no bar/ETA) for long-running commands
+- Nginx configs: write only if file does not exist (idempotent; preserves user edits)
+- test-installer: add check for apt/apt-get in installer script
+
+## [0.1.3](https://github.com/IntegerAlex/rig/releases/tag/v0.1.3) - 2025-01-02
 
 ### Added
 
@@ -47,7 +68,7 @@ All notable changes to this project will be documented in this file.
 
 - Added vrms (Virtual Richard M. Stallman) installer - lists non-free packages
 
-## [0.1.0] - 2025-12-31
+## [0.1.0](https://github.com/integeralex/rig/releases/tag/v0.1.0) - 2025-12-31
 
 ### Added (Initial Release)
 
@@ -66,4 +87,3 @@ All notable changes to this project will be documented in this file.
 
 - Fixed apt CLI warnings, command not found errors, and hanging issues
 
-[0.1.0]: https://github.com/integeralex/rig/releases/tag/v0.1.0
