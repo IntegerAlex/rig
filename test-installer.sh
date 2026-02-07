@@ -50,11 +50,19 @@ else
     exit 1
 fi
 
-# Check for Debian-specific checks
+# Check for Debian-specific checks (Ubuntu/Debian/Linux Mint)
 if grep -q "Debian-based system detected" "$TEMP_SCRIPT"; then
     echo "✅ Script includes Debian detection"
 else
     echo "❌ Script missing Debian detection"
+    exit 1
+fi
+
+# Check for apt or apt-get (support Linux Mint and derivatives)
+if grep -qE 'command -v apt |command -v apt-get' "$TEMP_SCRIPT"; then
+    echo "✅ Script checks for apt/apt-get"
+else
+    echo "❌ Script should check for apt or apt-get"
     exit 1
 fi
 

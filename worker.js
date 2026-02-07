@@ -51,15 +51,16 @@ fi
 
 echo "✅ Detected: Linux $ARCH"
 
-# Check if running on Debian-based system (has apt)
-if ! command -v apt-get &> /dev/null; then
-    echo "❌ This installer requires a Debian-based Linux distribution (Ubuntu, Debian, etc.)"
-    echo "apt-get command not found. Please install rig manually from:"
+# Check if running on Debian-based system (has apt or apt-get)
+if ! command -v apt &> /dev/null && ! command -v apt-get &> /dev/null; then
+    echo "❌ This installer requires a Debian-based Linux distribution"
+    echo "   Supported: Ubuntu, Debian, Linux Mint, and other Debian derivatives"
+    echo "apt/apt-get command not found. Please install rig manually from:"
     echo "https://github.com/` + REPO + `/releases"
     exit 1
 fi
 
-echo "✅ Debian-based system detected"
+echo "✅ Debian-based system detected (Ubuntu/Debian/Linux Mint/etc.)"
 
 # Get latest release tag
 echo "📦 Fetching latest release..."

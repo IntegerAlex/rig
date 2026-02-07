@@ -21,7 +21,7 @@ class PodmanInstaller(BaseInstaller):
             self.console.print("[blue]ℹ[/blue] Installing podman")
             
             self.runner.run(
-                ["apt-get", "install", "-y", "podman"],
+                ["apt", "install", "-y", "podman"],
                 sudo=True,
                 description="Installing podman"
             )

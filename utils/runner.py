@@ -227,14 +227,19 @@ class CommandRunner:
             env["DEBIAN_FRONTEND"] = "noninteractive"
             env["APT_LISTCHANGES_FRONTEND"] = "none"
 
-        # Show progress bar for long-running commands
-        show_progress = self._is_long_running_command(command) and not capture_output
+        # Show progress UI only when we are NOT streaming subprocess output.
+        # Streaming output while Rich is rendering spinners/bars causes broken renders.
+        # Also avoid progress UI for sudo commands (may need interactive prompts).
+        show_progress = self._is_long_running_command(command) and not capture_output and not sudo
         progress_task = None
+        effective_capture_output = capture_output
 
         if show_progress:
             progress_description = description or f"Running: {command[0]}"
             progress_task = self.progress.add_task(progress_description, total=None)
             self.progress.start()
+            # Prevent subprocess output from interleaving with Rich rendering.
+            effective_capture_output = True
 
         try:
             # For sudo commands, handle output based on command type
@@ -317,7 +322,7 @@ class CommandRunner:
                             stdin=sys.stdin,  # Ensure stdin is connected for password prompts
                             env=env
                         )
-            elif capture_output:
+            elif effective_capture_output:
                 # When capturing output, merge stderr into stdout
                 if self._is_network_command(command):
                     result = self._run_with_retry(

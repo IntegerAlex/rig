@@ -7,7 +7,7 @@ No custom configurations, just the essential tools needed to be installed.
 
 ### Quick Install (Recommended)
 
-For Debian-based Linux distributions (Ubuntu, Debian, etc.):
+For Debian-based Linux distributions (Ubuntu, Debian, Linux Mint, etc.):
 
 ```bash
 curl https://rig-installer.gossorg.in | bash
