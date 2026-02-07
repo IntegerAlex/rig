@@ -2,15 +2,55 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """nginx installer."""
 
+import os
 import shutil
+import tempfile
 
 from utils.base import BaseInstaller
 from utils.types import InstallerResult
 from utils.errors import PackageManagerError, InstallationError
 
+# Basic webserver: static files from /var/www/html
+NGINX_WEBSERVER_CONF = """# Basic webserver - rig
+# Enable: sudo ln -sf /etc/nginx/sites-available/rig-webserver /etc/nginx/sites-enabled/ && sudo nginx -t && sudo systemctl reload nginx
+server {
+    listen 80;
+    listen [::]:80;
+    server_name _;
+    root /var/www/html;
+    index index.html;
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+"""
+
+# Basic reverse proxy: edit server_name and proxy_pass for your app
+NGINX_REVERSE_PROXY_CONF = """# Basic reverse proxy - rig
+# Enable: sudo ln -sf /etc/nginx/sites-available/rig-reverse-proxy /etc/nginx/sites-enabled/ && sudo nginx -t && sudo systemctl reload nginx
+# Edit server_name and proxy_pass to match your app
+server {
+    listen 80;
+    listen [::]:80;
+    server_name example.com;
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+"""
+
 
 class NginxInstaller(BaseInstaller):
-    """Install nginx."""
+    """Install nginx with basic webserver and reverse-proxy configs."""
+    
+    SITES_AVAILABLE = "/etc/nginx/sites-available"
+    RIG_WEBSERVER = "rig-webserver"
+    RIG_REVERSE_PROXY = "rig-reverse-proxy"
     
     def is_installed(self) -> bool:
         # Check if command exists first to avoid error logs
@@ -22,6 +62,21 @@ class NginxInstaller(BaseInstaller):
             return result.returncode == 0
         except Exception:
             return False
+    
+    def _write_site_config(self, filename: str, content: str) -> None:
+        """Write a config file to sites-available using a temp file and sudo cp."""
+        path = os.path.join(self.SITES_AVAILABLE, filename)
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".conf", delete=False) as f:
+            try:
+                f.write(content)
+                f.flush()
+                self.runner.run(
+                    ["cp", f.name, path],
+                    sudo=True,
+                    description=f"Writing {filename}",
+                )
+            finally:
+                os.unlink(f.name)
     
     def install(self) -> InstallerResult:
         try:
@@ -39,7 +94,16 @@ class NginxInstaller(BaseInstaller):
                 description="Enabling nginx service"
             )
             
-            return InstallerResult(True, "nginx installed successfully")
+            self.console.print("[blue]ℹ[/blue] Adding basic webserver and reverse-proxy configs")
+            self._write_site_config(self.RIG_WEBSERVER, NGINX_WEBSERVER_CONF)
+            self._write_site_config(self.RIG_REVERSE_PROXY, NGINX_REVERSE_PROXY_CONF)
+            
+            self.console.print(
+                "[dim]Configs: /etc/nginx/sites-available/rig-webserver, "
+                "rig-reverse-proxy (enable and reload nginx to use)[/dim]"
+            )
+            
+            return InstallerResult(True, "nginx installed with basic webserver and reverse-proxy configs")
         except (PackageManagerError, InstallationError):
             # Re-raise custom errors as-is
             raise
