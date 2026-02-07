@@ -230,14 +230,21 @@ class CommandRunner:
         # Show progress UI only when we are NOT streaming subprocess output.
         # Streaming output while Rich is rendering spinners/bars causes broken renders.
         # Also avoid progress UI for sudo commands (may need interactive prompts).
+        # Use spinner-only Progress for indeterminate tasks (no bar/ETA).
         show_progress = self._is_long_running_command(command) and not capture_output and not sudo
-        progress_task = None
+        progress_ui = None
         effective_capture_output = capture_output
 
         if show_progress:
             progress_description = description or f"Running: {command[0]}"
-            progress_task = self.progress.add_task(progress_description, total=None)
-            self.progress.start()
+            progress_ui = Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                console=console,
+                transient=True,
+            )
+            progress_ui.add_task(progress_description, total=None)
+            progress_ui.start()
             # Prevent subprocess output from interleaving with Rich rendering.
             effective_capture_output = True
 
@@ -400,7 +407,6 @@ class CommandRunner:
             self.logger.log("error", error_msg)
             raise
         finally:
-            # Stop progress bar if it was started
-            if show_progress and progress_task is not None:
-                self.progress.stop()
+            if progress_ui is not None:
+                progress_ui.stop()
 
