@@ -65,6 +65,8 @@ class CommandRunner:
     def __init__(self, logger: SetupLogger):
         self.logger = logger
         self.console = console
+        # Verbose mode: echo commands to console when RIG_VERBOSE=1
+        self.verbose = os.environ.get("RIG_VERBOSE") == "1"
         self.progress = Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
@@ -217,6 +219,8 @@ class CommandRunner:
         
         cmd_str = " ".join(command)
         self.logger.log("info", f"CMD: {cmd_str}")
+        if self.verbose:
+            self.console.print(f"[dim]$ {cmd_str}[/dim]")
         
         if description:
             self.console.print(f"[dim]→ {description}[/dim]")

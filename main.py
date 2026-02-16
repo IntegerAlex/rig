@@ -6,13 +6,14 @@ Beautiful system setup tool with rich UI and comprehensive error handling.
 Migrated from new1.sh with enhanced features.
 """
 
+import os
 import sys
 import time
 from typing import List
 
 from rich.console import Console
 from rich.panel import Panel
-from rich.prompt import Confirm
+from rich.prompt import Confirm, Prompt
 from rich.table import Table
 from rich.text import Text
 from rich.traceback import install as install_rich_traceback
@@ -315,6 +316,49 @@ class SetupManager:
         self.console.print(summary_panel)
         self.console.print()
     
+    def show_next_steps(self):
+        """Show post-install hints for successfully installed tools."""
+        hints = {
+            "GitHub CLI": "Run 'gh auth login' to authenticate with GitHub.",
+            "git": "Configure your identity: git config --global user.name/email.",
+            "SSH Key": "Add '~/.ssh/id_rsa.pub' to GitHub or your servers.",
+            "Node.js": "Open a new shell so nvm is loaded, then run 'node -v'.",
+            "pnpm": "Run 'pnpm -v' to verify pnpm is available via corepack.",
+            "Neovim": "Run 'nvim' and start customizing your config.",
+            "nginx": "Edit 'rig-webserver' or 'rig-reverse-proxy' in /etc/nginx/sites-available, enable, then 'sudo nginx -t && sudo systemctl reload nginx'.",
+            "UFW": "Enable firewall: sudo ufw enable; check with: sudo ufw status verbose.",
+            "Fail2ban": "Check jails after some time: sudo fail2ban-client status.",
+            "zsh": "Log out and back in for the default shell change to take effect.",
+            "podman": "Run 'podman info' to confirm rootless containers work.",
+            "fastfetch": "Run 'fastfetch' to view your system summary.",
+        }
+
+        next_steps: list[tuple[str, str]] = []
+        for name, result in self.results:
+            if result.success and name in hints:
+                next_steps.append((name, hints[name]))
+
+        if not next_steps:
+            return
+
+        table = Table(
+            title="🧭 Next steps",
+            show_header=True,
+            header_style="bold blue",
+            border_style="blue",
+            show_lines=True,
+            box=None,
+            padding=(0, 1),
+        )
+        table.add_column("Tool", style="cyan bold", no_wrap=True, min_width=12)
+        table.add_column("Suggestion", style="white", min_width=40)
+
+        for name, hint in next_steps:
+            table.add_row(name, hint)
+
+        self.console.print(table)
+        self.console.print()
+    
     def run(self):
         """Run the setup process."""
         self._start_time = time.time()
@@ -338,6 +382,55 @@ class SetupManager:
         else:
             self.console.print(f"[green]✓[/green] Bootstrap completed\n")
 
+        # Preset selection (UX sugar): dev, server, security, or none
+        presets = {
+            "dev": {
+                "GitHub CLI",
+                "uv",
+                "Node.js",
+                "pnpm",
+                "Neovim",
+                "Developer Tools",
+                "SSH Key",
+                "fastfetch",
+                "git",
+                "zsh",
+                "podman",
+                "btop",
+            },
+            "server": {
+                "GitHub CLI",
+                "Node.js",
+                "pnpm",
+                "nginx",
+                "Certbot",
+                "UFW",
+                "Fail2ban",
+                "SSH Key",
+                "fastfetch",
+                "git",
+                "rkhunter",
+                "chkrootkit",
+            },
+            "security": {
+                "UFW",
+                "Fail2ban",
+                "rkhunter",
+                "chkrootkit",
+                "vrms",
+            },
+        }
+        
+        preset_choice = Prompt.ask(
+            "[cyan]Select preset (optional)[/cyan]",
+            choices=["none", "dev", "server", "security"],
+            default="none",
+        )
+        preset_tools = presets.get(preset_choice, set())
+        if preset_choice != "none" and preset_tools:
+            tools_list = ", ".join(sorted(preset_tools))
+            self.console.print(f"[dim]→ Using '{preset_choice}' preset (pre-selecting: {tools_list})[/dim]")
+        
         # Ask for each option
         selected_options = []
         for option in self.install_options[1:]:  # Skip bootstrap
@@ -348,6 +441,12 @@ class SetupManager:
                 if is_installed:
                     self.console.print(f"[dim]→ {option.name} is already installed, skipping[/dim]")
                     continue
+            
+            # Auto-select tools from the chosen preset
+            if option.name in preset_tools:
+                self.console.print(f"[dim]→ {option.name} selected via '{preset_choice}' preset[/dim]")
+                selected_options.append(option)
+                continue
 
             if Confirm.ask(f"[cyan]👉[/cyan] Install {option.name}?", default=False):
                 selected_options.append(option)
@@ -400,6 +499,9 @@ class SetupManager:
         self.console.print()
         update_shell_config(".local/bin")
 
+        # Show next steps based on installed tools
+        self.show_next_steps()
+
         # Final messages
         self.console.print()
         self.console.print(f"[green]✓[/green] Setup completed successfully 🎉")
@@ -409,6 +511,11 @@ class SetupManager:
 def main():
     """Main entry point."""
     try:
+        # Enable verbose mode via CLI flag or environment variable
+        verbose = "--verbose" in sys.argv or "-v" in sys.argv or os.environ.get("RIG_VERBOSE") == "1"
+        if verbose:
+            os.environ["RIG_VERBOSE"] = "1"
+        
         manager = SetupManager()
         manager.run()
     except KeyboardInterrupt:
