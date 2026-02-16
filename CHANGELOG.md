@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.5](https://github.com/IntegerAlex/rig/releases/tag/v0.1.5) - 2025-02-16
+
+### Added
+
+- **Verbose mode**: `--verbose` / `-v` flag or `RIG_VERBOSE=1` to echo commands before execution
+- **Install presets**: Quick selection for dev, server, or security tool sets
+- **Next steps panel**: Post-install hints for successfully installed tools (e.g., "Run 'gh auth login' for GitHub CLI")
+
+### Changed
+
+- UX flow: Preset selection before individual tool prompts (none/dev/server/security)
+- Command visibility: Verbose mode shows `$ command` before execution for debugging
+
 ## [0.1.4](https://github.com/IntegerAlex/rig/releases/tag/v0.1.4) - 2025-02-07
 
 ## Added
