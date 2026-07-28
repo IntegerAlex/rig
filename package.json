@@ -1,0 +1,25 @@
+{
+  "name": "rig",
+  "version": "0.1.5",
+  "description": "Opinionated system setup tool",
+  "type": "module",
+  "bin": "dist/rig",
+  "scripts": {
+    "build": "./node_modules/.bin/scriptc build src/main.ts -o dist/rig --no-keep-c --dynamic",
+    "build:static": "./node_modules/.bin/scriptc build src/main.ts -o dist/rig --no-keep-c",
+    "build:c": "./node_modules/.bin/scriptc build src/main.ts -o dist/rig --no-keep-c --backend c",
+    "dev": "tsx src/main.ts",
+    "coverage": "./node_modules/.bin/scriptc coverage src/main.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "scriptc": "^0.0.17"
+  }
+}
