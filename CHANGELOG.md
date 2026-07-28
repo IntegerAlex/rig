@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0](https://github.com/IntegerAlex/rig/releases/tag/v0.2.0) - 2025-07-28
+
+### Changed
+
+- **Port from Python to TypeScript**: Full rewrite from Python 3.12+ to TypeScript
+- **New build system**: Uses scriptc (TypeScript-to-native compiler) instead of PyInstaller
+- **Smaller binary**: ~1.8MB (vs ~10MB PyInstaller), faster startup (~2ms)
+- **Native executable**: ELF 64-bit binary, no runtime dependencies
+- **Ubuntu cross-version compatible**: Binary links against glibc 2.35+, works on Ubuntu 20.04+, Debian 11+
+
+### Technical Details
+
+- TypeScript source in `src/` directory
+- Build with: `npm run build` (local scriptc) or `./build.sh`
+- Run in development: `npm run dev` (via tsx)
+- All 22 installers ported with identical behavior
+- ANSI terminal UI (no rich/Python dependency)
+- Factory function pattern (no class inheritance) for scriptc compatibility
+- Synchronous `is_installed` checks, async `install()` methods
+
 ## [0.1.5](https://github.com/IntegerAlex/rig/releases/tag/v0.1.5) - 2025-02-16
 
 ### Added

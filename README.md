@@ -34,13 +34,24 @@ rig  # Run rig (requires sudo for system tools)
 ```bash
 git clone https://github.com/integeralex/rig.git
 cd rig
-uv sync
-python3 main.py
+npm install
+npm run build
+./dist/rig
 
-# or
-
-uv run main.py
+# or run directly with tsx
+npm run dev
 ```
+
+## Build
+
+rig is a TypeScript project compiled to a native binary using [scriptc](https://scriptc.dev/) (TypeScript-to-native compiler).
+
+```bash
+npm run build      # Build native binary (dynamic)
+npm run dev        # Run via tsx (development)
+```
+
+The resulting binary (`dist/rig`) is a self-contained ELF 64-bit executable (~1.8MB).
 
 ## tools
 

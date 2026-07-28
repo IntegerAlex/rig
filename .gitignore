@@ -9,10 +9,12 @@ __pycache__/
 .mypy_cache/
 .coverage
 .coverage.*
-.coverage.*.*
-.coverage.*.*.*
 
 # PyInstaller build artifacts
 build/
 dist/
 *.spec.bak
+
+# Node / TypeScript
+node_modules/
+.scriptc/
